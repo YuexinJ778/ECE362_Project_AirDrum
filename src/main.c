@@ -22,12 +22,12 @@
 #define REG_OUTX_L_G            0x22
 #define REG_OUTX_L_A            0x28
 
-// ---------- “稍微更敏感”的简化检测参数（仅下落触发） ----------
-#define EMA_ALPHA              0.28f     // 原来 0.20，略提一点，响应更快但不过敏
-#define MIN_PEAK_LSB           2500.0f   // 原来 3000，略降一点，便于识别有效峰
-#define MIN_DROP_LSB           1300.0f   // 原来 1500，略降一点，稍微更敏感
-#define D_EPS                  1.0f      // 导数阈值，保持温和去抖
-#define MIN_INTERVAL_SAMPLES   14        // 原来 20，略缩短，避免“只打一枪”但不至于连发
+// 
+#define EMA_ALPHA              0.28f     
+#define MIN_PEAK_LSB           2500.0f   
+#define MIN_DROP_LSB           1300.0f   
+#define D_EPS                  1.0f      
+#define MIN_INTERVAL_SAMPLES   14        
 
 static inline int16_t u8pair_to_i16(uint8_t lo, uint8_t hi) {
     return (int16_t)((hi << 8) | lo);
@@ -63,9 +63,9 @@ static bool probe_whoami(void) {
 }
 
 static void enable_odo_208hz(void) {
-    write_reg(REG_CTRL3_C, 0b01000100); // IF_INC=1, BDU=1
-    write_reg(REG_CTRL1_XL, 0b01100000); // Accel 208Hz, ±2g
-    write_reg(REG_CTRL2_G,  0b01100000); // Gyro  208Hz, 250dps
+    write_reg(REG_CTRL3_C, 0b01000100); 
+    write_reg(REG_CTRL1_XL, 0b01100000); 
+    write_reg(REG_CTRL2_G,  0b01100000); 
     sleep_ms(20);
 }
 
@@ -87,12 +87,11 @@ void read_gyro_raw(int16_t* gx, int16_t* gy, int16_t* gz) {
     if (gz) *gz = u8pair_to_i16(buf[4], buf[5]);
 }
 
-// ---------- 仅“下落触发”的简洁两态机 ----------
 typedef struct {
     float ema, last, peak, trough;
-    int   state;        // 0:找峰  1:下落中
-    int   cooldown;     // 冷却计数，避免抖动多触发
-    bool  fired_in_descent; // 本次下落已触发过
+    int   state;        
+    int   cooldown;     
+    bool  fired_in_descent; 
 } HitState;
 
 enum { SEARCH_PEAK = 0, DESCENT = 1 };
@@ -104,7 +103,7 @@ static inline void hit_init(HitState* s, float x0) {
     s->fired_in_descent = false;
 }
 
-// 只在“峰->谷的下落途中”且跌幅首次超过阈值时触发；回升不触发
+// the logic to detect a "hit" event
 static inline bool hit_step(HitState* s, float x) {
     s->ema = EMA_ALPHA * x + (1.0f - EMA_ALPHA) * s->ema;
     float dx = s->ema - s->last;
@@ -114,26 +113,26 @@ static inline bool hit_step(HitState* s, float x) {
 
     if (s->state == SEARCH_PEAK) {
         if (s->ema > s->peak) s->peak = s->ema;
-        // 只在出现明显“向下”时进入下落态
+        
         if (s->peak >= MIN_PEAK_LSB && dx < -D_EPS) {
             s->trough = s->ema;
             s->fired_in_descent = false;
             s->state = DESCENT;
         }
         return false;
-    } else { // DESCENT
+    } else { 
         if (s->ema < s->trough) s->trough = s->ema;
 
-        // ★ 核心：第一次超过跌幅阈值则触发（只触发一次）
+        
         if (!s->fired_in_descent && (s->peak - s->ema) >= MIN_DROP_LSB) {
             s->fired_in_descent = true;
-            s->cooldown = MIN_INTERVAL_SAMPLES; // 小冷却抑制抖动
-            return true; // 只在“放下去”时打一次
+            s->cooldown = MIN_INTERVAL_SAMPLES; 
+            return true; 
         }
 
-        // 当明显出现回升时，重新回到找峰，等待下一次动作
+        
         if (dx > D_EPS) {
-            s->peak = s->ema;         // 以当前位置作为下一轮起点
+            s->peak = s->ema;         // reset peak
             s->state = SEARCH_PEAK;
         }
         return false;
@@ -149,9 +148,9 @@ int main() {
     enable_odo_208hz();
 
     float acc_bias[3], gyr_bias[3];
-    calibrate_bias(acc_bias, gyr_bias);   // 由你的 imu_io.h 提供
+    calibrate_bias(acc_bias, gyr_bias);   // imu data
 
-    // 初始化检测器
+    // initialize hit detection state
     int16_t ax0, ay0, az0;
     read_accel_raw(&ax0, &ay0, &az0);
     float axf0 = (float)ax0 - acc_bias[0];
@@ -171,10 +170,9 @@ int main() {
         float amag = sqrtf(axf*axf + ayf*ayf + azf*azf);
 
         if (hit_step(&hs, amag)) {
-            printf("HIT\n");  // 只在“放下去”时触发
+            printf("HIT\n");  
         }
 
-        // 回到原先的用户态频率（更稳更省资源）
         sleep_ms(20);  // ≈50 Hz
     }
 }
