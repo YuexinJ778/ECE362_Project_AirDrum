@@ -290,31 +290,40 @@ static void vga_init_display(void){
     g_vga_ready = true;
 }
 
-static void vga_hit_animation(int slot, float yaw_deg){
-    if (!g_vga_ready) return;
-
+static void vga_hit_animation(int slot, float yaw_deg, bool animate){
     switch (slot) {
         case 2:  // SNARE -> 左上鼓
-            hit_left_upper_tom();
+            snare_played = true;
+            if (animate && g_vga_ready) hit_left_upper_tom();
             break;
         case 3:  // HI_TOM -> 中间两上鼓
-            hit_upper_toms();
+            hitom_played = true;
+            if (animate && g_vga_ready) hit_upper_toms();
             break;
         case 4:  // MEDIUM_TOM -> 右上鼓
-            hit_right_upper_tom();
+            midtom_played = true;
+            if (animate && g_vga_ready) hit_right_upper_tom();
             break;
         case 5:  // FLOOR_TOM -> 左/右地鼓
-            if (yaw_deg < 0.0f) hit_left_floor_tom();
-            else                hit_right_floor_tom();
+            midtom_played = true;
+            if (animate && g_vga_ready) {
+                if (yaw_deg < 0.0f) hit_left_floor_tom();
+                else                hit_right_floor_tom();
+            }
             break;
         case 6:  // CYMBAL -> 左/中/右镲
-            if      (yaw_deg <= -YAW_ON_DEG) hit_left_cymbal();
-            else if (yaw_deg >=  YAW_ON_DEG) hit_right_cymbal();
-            else                             hit_middle_cymbal();
+            hihat_played = true;
+            if (animate && g_vga_ready) {
+                if      (yaw_deg <= -YAW_ON_DEG) hit_left_cymbal();
+                else if (yaw_deg >=  YAW_ON_DEG) hit_right_cymbal();
+                else                             hit_middle_cymbal();
+            }
             break;
         default:
-            show_drum();
-            draw_hit_label("Ready");
+            if (animate && g_vga_ready) {
+                show_drum();
+                draw_hit_label("Ready");
+            }
             break;
     }
 }
@@ -409,26 +418,6 @@ int adc_fifo_read(void) {
 }
 
 
-void trigger(int slot) {
-    switch(slot) {
-        case 2:
-            snare_played = true;
-            break;
-        case 3:
-            hitom_played = true;
-            break;
-        case 4:
-            midtom_played = true;
-            break;
-        case 6:
-            hihat_played = true;
-            break;
-        default:
-            break;
-    }
-}
-
-
 /* ==================== 主程序 ==================== */
 int main(void){
     stdio_init_all();
@@ -496,10 +485,14 @@ int main(void){
 
                 //PWM sound output
                 volume = adc_fifo_read(); // read volume from ADC
-                trigger(slot);
 
                 uint32_t now=to_ms_since_boot(get_absolute_time());
-                if(now - last_hit_ms >= HIT_MIN_GAP_MS){
+                bool can_animate = (now - last_hit_ms >= HIT_MIN_GAP_MS);
+
+                // Always trigger audio; animate only when gap允许
+                vga_hit_animation(slot, yaw_now, can_animate);
+
+                if(can_animate){
                     last_hit_ms = now;
 
                     // 命中编号 +1
@@ -509,9 +502,6 @@ int main(void){
                     print_pose_at_hit(g_hit_count, slot,
                                       tilt_raw, tilt_corr,
                                       yaw_now, ghat, gy_now);
-
-                    // 触发 VGA 击打动画
-                    vga_hit_animation(slot, yaw_now);
 
                     // 命中后轻度衰减 yaw，避免不断累积
                     yaw_rel_deg *= 0.6f;

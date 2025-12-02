@@ -20,11 +20,11 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "/Users/roderick/Desktop/ECE36200/ECE362_Project_AirDrum/.pio/build/proton/firmware.elf",
+            "executable": "/home/yushshl/Desktop/ECE362/ECE362_Project_AirDrum/.pio/build/proton/firmware.elf",
             "projectEnvName": "proton",
-            "toolchainBinDir": "/Users/roderick/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "toolchainBinDir": "/home/yushshl/.platformio/packages/toolchain-gccarmnoneeabi/bin",
             "internalConsoleOptions": "openOnSessionStart",
-            "svdPath": "/Users/roderick/.platformio/platforms/raspberrypi@src-3118cb8d4f3004f59229252434d3c1ce/misc/svd/rp2350.svd",
+            "svdPath": "/home/yushshl/.platformio/platforms/raspberrypi/misc/svd/rp2350.svd",
             "preLaunchTask": {
                 "type": "PlatformIO",
                 "task": "Pre-Debug"
@@ -34,21 +34,21 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "/Users/roderick/Desktop/ECE36200/ECE362_Project_AirDrum/.pio/build/proton/firmware.elf",
+            "executable": "/home/yushshl/Desktop/ECE362/ECE362_Project_AirDrum/.pio/build/proton/firmware.elf",
             "projectEnvName": "proton",
-            "toolchainBinDir": "/Users/roderick/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "toolchainBinDir": "/home/yushshl/.platformio/packages/toolchain-gccarmnoneeabi/bin",
             "internalConsoleOptions": "openOnSessionStart",
-            "svdPath": "/Users/roderick/.platformio/platforms/raspberrypi@src-3118cb8d4f3004f59229252434d3c1ce/misc/svd/rp2350.svd"
+            "svdPath": "/home/yushshl/.platformio/platforms/raspberrypi/misc/svd/rp2350.svd"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "/Users/roderick/Desktop/ECE36200/ECE362_Project_AirDrum/.pio/build/proton/firmware.elf",
+            "executable": "/home/yushshl/Desktop/ECE362/ECE362_Project_AirDrum/.pio/build/proton/firmware.elf",
             "projectEnvName": "proton",
-            "toolchainBinDir": "/Users/roderick/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "toolchainBinDir": "/home/yushshl/.platformio/packages/toolchain-gccarmnoneeabi/bin",
             "internalConsoleOptions": "openOnSessionStart",
-            "svdPath": "/Users/roderick/.platformio/platforms/raspberrypi@src-3118cb8d4f3004f59229252434d3c1ce/misc/svd/rp2350.svd",
+            "svdPath": "/home/yushshl/.platformio/platforms/raspberrypi/misc/svd/rp2350.svd",
             "loadMode": "manual"
         }
     ]
