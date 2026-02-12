@@ -86,6 +86,8 @@ Boyang Wu
 
 ## 🎥 Demo
 video demo: https://youtu.be/benzvqpY0oE?feature=shared
+
+Poster:
 [AirDrum.pdf](https://github.com/user-attachments/files/25248640/AirDrum.pdf)
 
 
